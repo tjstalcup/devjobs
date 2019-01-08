@@ -11,11 +11,11 @@ var bodyParser   = require('body-parser');
 var session      = require('express-session');
 
 // week 2 - mongodb atlas
-// var configDB = require('./config/database.js'); 
-// mongoose.connect(configDB.url); 
+var configDB = require('./config/database.js'); 
+mongoose.connect(configDB.url); 
 
 // week 2 - authentication
-// require('./config/passport')(passport);
+require('./config/passport')(passport);
 
 app.use(morgan('dev')); 
 app.use(cookieParser()); 
