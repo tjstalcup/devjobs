@@ -1,6 +1,6 @@
 var express  = require('express');
 var app      = express();
-var port     = process.env.PORT || 8080;
+var PORT     = process.env.PORT || 8080;
 var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
@@ -12,7 +12,7 @@ var session      = require('express-session');
 
 // week 2 - mongodb atlas
 var configDB = require('./config/database.js'); 
-mongoose.connect(configDB.url); 
+// mongoose.connect(configDB.url); 
 
 // week 2 - authentication
 require('./config/passport')(passport);
@@ -35,6 +35,66 @@ require('./app/routes/main.js')(app, passport);
 require('./app/routes/auth.js')(app, passport); 
 // additional routes will come in as needed
 
+let server; // create this globally so we can start and stop the server
+
+function runServer(databaseURL = configDB.url, port = PORT){
+  // passing in a databseURL, if empty, use the default in config/database.js
+  // passing in a port, if empty, use the default port (process.env or 8080)
+
+  // we want this function to return a promise so we can handle rejection in our test file
+  return new Promise((resolve, reject) => {
+    // let's start by connecting to the DB
+    mongoose.connect(databaseURL, err => {
+      if(err){
+        // reject if that doesn't work
+        return reject(err);
+      }
+
+      // now let's start the server
+      server = app.listen(port, ()=>{
+        console.log(`~~~~DevJobs is running on port ${port}~~~~`);
+        // resolve if both the DB and Server work
+        resolve();
+      })
+      .on('error', err => {
+        // app.listen is a promise that will emit an error event if something goes wrong
+        //disconnect the db and reject w/ error
+        mongoose.disconnect();
+        reject(err);
+      });
+    });
+  });
+}
+
+function closeServer(){
+  mongoose.disconnect();
+
+  return new Promise((resolve,reject)=>{
+    console.log('~~~~DevJobs Server is shutting down~~~~');
+
+    server.close(err=>{
+      if(err){
+        reject(err);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
+// now if we don't call this from a test file, but rather from npm start, nodemon, node server.js, etc.
+// we have to manually start the server with our new function
+
+// require.main is what file required this
+// module is this file
+// so if they are the same, start the server
+if(require.main === module){
+  runServer(configDB.url).catch(err=>console.error(err));
+}
+
+module.exports = {app, runServer, closeServer};
+
+
 // launch ======================================================================
-app.listen(port);
-console.log('Your app is running at http://localhost:' + port);
+// app.listen(port);
+// console.log('Your app is running at http://localhost:' + port);
