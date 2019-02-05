@@ -1,0 +1,27 @@
+<% include ../partials/header %>
+
+<h2>Manage My Skills</h2>
+
+<div class="row">
+  <div class="col s6">
+    <h3>My Skills</h3>
+    <p># of Current Skills: <%=user.skills.length%></p>
+    <ul>
+        <% user.skills.forEach(function(skill){ %>
+          <li><%=skill.name%></li>
+        <% }) %>
+    </ul>
+  </div>
+  <div class="col s6">
+    <h3>Available Skills</h3>
+    <p># of Available Skills: <%=skills.length%></p>
+    <ul>
+      <% skills.forEach(function(skill){ %>
+        <li><a href="/add-skill/<%=skill._id%>/<%=user._id%>">+</a> - <%=skill.name%></li>
+      <% }) %>
+    </ul>
+  </div>
+</div>
+
+    
+<% include ../partials/footer %>

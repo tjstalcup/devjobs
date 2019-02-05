@@ -1,0 +1,10 @@
+nav .brand-logo {
+  color: #fff;
+  display: inline-block;
+  width: 250px;
+  padding: 11px;
+}
+
+nav a img {
+  width: 100%;
+}

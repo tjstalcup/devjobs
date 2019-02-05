@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>DevJobs - Find your next job</title>
+
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="#" class="brand-logo"><img src="/img/logo.png"/></a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <% if(user) { %>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/myskills">Skills</a></li>
+          <li><a href="/logout">Logout</a></li>
+        <% } else { %> 
+          <li><a href="/signup">Register</a></li>
+          <li><a href="/login">Login</a></li>
+        <% } %>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">

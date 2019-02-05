@@ -29,12 +29,12 @@ userSchema.methods.validPassword = function(password) {
 };
 
 userSchema.pre('find',function(next){
-    this.populate('skills');
+    //this.populate('skills');
     next();
 });
 
 userSchema.pre('findOne',function(next){
-    this.populate('skills');
+    //this.populate('skills');
     next();
 });
 

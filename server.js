@@ -14,6 +14,8 @@ var session      = require('express-session');
 var configDB = require('./config/database.js'); 
 // mongoose.connect(configDB.url); 
 
+app.use(express.static('public'));
+
 // week 2 - authentication
 require('./config/passport')(passport);
 
@@ -22,7 +24,7 @@ app.use(cookieParser());
 app.use(bodyParser()); 
 
 // week 5 - template
-// app.set('view engine', 'ejs'); 
+app.set('view engine', 'ejs'); 
 
 // week 2 - authentication
 app.use(session({ secret: 'thinkful-8-temp' })); 
