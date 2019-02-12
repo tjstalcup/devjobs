@@ -6,7 +6,7 @@ var jobSchema = mongoose.Schema({
 
   guid: String,
   link: String,
-  categories: [String],
+  skills: [{type: mongoose.Schema.Types.ObjectId, ref: 'Skill'}],
   jobTitle: String,
   description: String,
   pubDate: Date,
@@ -15,6 +15,16 @@ var jobSchema = mongoose.Schema({
     
 },{
     usePushEach: true
+});
+
+jobSchema.pre('find',function(next){
+  this.populate('skills');
+  next();
+});
+
+jobSchema.pre('findOne',function(next){
+  this.populate('skills');
+  next();
 });
 
 jobSchema.plugin(findOrCreate);

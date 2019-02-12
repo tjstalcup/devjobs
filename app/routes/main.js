@@ -1,6 +1,8 @@
 let User = require('../models/user');
 let Job = require('../models/job');
 let Skill = require('../models/skill');
+let request = require('request');
+let parseString = require('xml2js').parseString;
 
 
 module.exports = function(app, passport) {
@@ -70,6 +72,23 @@ module.exports = function(app, passport) {
 
     Job.find()
       .then((jobs)=>{
+        // each job has skills [{_id,name}]
+        // req.user has skills [id,id,id]
+        jobs.forEach(job=>{
+          let userSkills = 0;
+          job.skills.forEach(skill=>{
+            if(req.user.skills.indexOf(skill._id)>=0){
+              userSkills++;
+            }
+          });
+          job.matchRate = (userSkills/job.skills.length)*100;
+          console.log(job.matchRate);
+        });
+
+        jobs = jobs.sort(function(a,b){
+          return b.matchRate - a.matchRate;
+        });
+
         res.render('pages/dashboard',{
           user: req.user,
           jobs: jobs
@@ -94,6 +113,28 @@ module.exports = function(app, passport) {
       .then((jobs)=>res.send(jobs))
       .catch(errorHandler);
   });
+
+  app.get('/job/:id',isLoggedIn,(req,res)=>{
+    Job.findOne({_id:req.params.id})
+      .then(job=>{
+        // req.user.skills[]
+        // job.skills[{_id,name}]
+        let userSkills = 0;
+        job.skills.forEach(skill=>{
+          if(req.user.skills.indexOf(skill._id)>=0){
+            userSkills++;
+          }
+        });
+        let matchRate = (userSkills/job.skills.length)*100;
+
+        res.render('pages/job',{
+          user: req.user,
+          job: job,
+          matchRate: matchRate
+        });
+      })
+      .catch(errorHandler);
+  })
 
   app.post('/jobs',(req,res)=>{
     // postbody should look like
@@ -133,6 +174,102 @@ module.exports = function(app, passport) {
       })
       .catch(errorHandler);
   });
+
+  app.get('/call-jobs',(req,res)=>{
+    //https://stackoverflow.com/jobs/feed?page=2
+    //https://stackoverflow.com/jobs/feed
+    request('https://stackoverflow.com/jobs/feed', function (error, response, body) {
+      console.log('error:', error); 
+      console.log('statusCode:', response && response.statusCode); 
+      parseString(body, function (err, result) {
+        // res.send(result); 
+        // res.send({
+        //   "numResults": result.rss.channel[0]['os:totalResults'][0],
+        //   "job1Title": result.rss.channel[0].item[0].title
+        // });
+
+        let items = result.rss.channel[0].item;
+        // let numResults = result.rss.channel[0]['os:totalResults'][0];
+        let numResults = 10;
+        let completed = 0;
+
+        items.forEach(function(item,index){
+          if(item.hasOwnProperty('category') && index < numResults){
+
+            let numSkills = (item.hasOwnProperty('category')) ? item.category.length : 0;
+            let numSkillsCompleted = 0;
+            let skills = [];
+            
+            normalizeCategories(item.category,(categories)=>{
+              categories.forEach((cat)=>{
+                // Skill.findOrCreate({name:cat})
+                // .then((skill)=>{
+                //   skills.push(skill.doc._doc._id);
+                //   checkSkillsDone();
+                // });
+                Skill.findOne({name:cat})
+                  .then(skill=>{
+                    if(skill){
+                      skills.push(skill._id);
+                      checkSkillsDone();
+                    } else {
+                      return Skill.create({name:cat});
+                    }
+                  })
+                  .then(skill=>{
+                    skills.push(skill._id);
+                    checkSkillsDone();
+                  });
+              });
+            });
+            
+            function checkSkillsDone(){
+              numSkillsCompleted++;
+              if(numSkillsCompleted == numSkills){
+                // guid, link, skills, jobTitle, description, pubDate, updateDate, location
+                Job.findOne({
+                  guid: item.guid[0]['_']
+                })
+                  .then(job=>{
+                    if(job){
+                      checkDone();
+                    } else {
+                      return Job.create({
+                        guid: item.guid[0]['_'],
+                        link: item.link[0],
+                        skills: skills,
+                        jobTitle: item.title[0],
+                        description: item.description[0],
+                        pubDate: item.pubDate[0],
+                        updateDate: item['a10:updated'][0],
+                        location: item.location[0]['_']
+                      })
+                    }
+                  })
+                  .then((job)=>checkDone())
+                  .catch(errorHandler);
+              }
+            }
+          }
+          if(index<numResults){
+            checkDone();
+          }
+        });
+
+        function checkDone(){
+          completed++;
+          if(completed == numResults){
+            res.send(200);
+          } else {
+            console.log(`Completed ${completed} out of ${numResults}`);
+          }
+        }
+
+        
+
+      });
+    });
+  })
 
 };
 

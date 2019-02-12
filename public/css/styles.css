@@ -8,3 +8,24 @@ nav .brand-logo {
 nav a img {
   width: 100%;
 }
+
+li.hasSkill {
+  font-weight: bold;
+  color: orange;
+}
+
+.match-100 {
+  color: #64ffda;
+}
+.match-80 {
+  color: #b2ff59;
+}
+.match-60 {
+  color: #ffeb3b;
+}
+.match-40 {
+  color: #ff9800;
+}
+.match-0 {
+  color: #f44336;
+}

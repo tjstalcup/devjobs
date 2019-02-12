@@ -9,19 +9,19 @@
             <div class="card-content white-text">
               <span class="card-title"><%=job.jobTitle%></span>
               <p><%=job.location%></p>
-              <ul class="job-categories">
-                <% job.categories.forEach(function(skill){ %>
+              <ul class="job-skills">
+                <% job.skills.forEach(function(skill){ %>
                   <% if(user.skills.indexOf(skill._id)>=0) { %>
-                    <li class="hasSkill"><%=skill%></li>
+                    <li class="hasSkill"><%=skill.name%></li>
                   <% } else { %>
-                    <li><%=skill%></li>
+                    <li><%=skill.name%></li>
                   <% } %> 
                 <% }) %>
               </ul>
             </div>
             <div class="card-action">
               <a href="/job/<%=job._id%>">More Details</a>
-              <span class="right">80% match</span>
+              <span class="right <%=(job.matchRate >=80) ? 'match-80' : '' %>"><%=job.matchRate%>% match</span>
             </div>
           </div>
         </div>

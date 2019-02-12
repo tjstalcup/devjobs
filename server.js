@@ -1,5 +1,6 @@
 var express  = require('express');
 var app      = express();
+require('run-middleware')(app);
 var PORT     = process.env.PORT || 8080;
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -9,6 +10,8 @@ var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
+
+var cron = require('node-cron');
 
 // week 2 - mongodb atlas
 var configDB = require('./config/database.js'); 
@@ -36,6 +39,13 @@ app.use(flash()); // sending session based messages between views
 require('./app/routes/main.js')(app, passport); 
 require('./app/routes/auth.js')(app, passport); 
 // additional routes will come in as needed
+
+cron.schedule('* */1 * * *', () => {
+  app.runMiddleware('/call-jobs',{connection: {}},(code,body,headers)=>{
+    //console.log('cron response:',body);
+    // console.log('response');
+  });
+});
 
 let server; // create this globally so we can start and stop the server
 
