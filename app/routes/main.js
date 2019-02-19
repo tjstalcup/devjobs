@@ -205,7 +205,7 @@ module.exports = function(app, passport) {
 
         let items = result.rss.channel[0].item;
         // let numResults = result.rss.channel[0]['os:totalResults'][0];
-        let numResults = 1000;
+        let numResults = 10;
         let completed = 0;
 
         items.forEach(function(item,index){
