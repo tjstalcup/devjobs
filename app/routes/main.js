@@ -307,7 +307,7 @@ module.exports = function(app, passport) {
         //   "numResults": result.rss.channel[0]['os:totalResults'][0],
         //   "job1Title": result.rss.channel[0].item[0].title
         // });
-
+      if(result.hasOwnProperty('rss')){
         let items = result.rss.channel[0].item;
         // let numResults = result.rss.channel[0]['os:totalResults'][0];
         let numResults = 10;
@@ -384,7 +384,9 @@ module.exports = function(app, passport) {
             console.log(`Completed ${completed} out of ${numResults}`);
           }
         }
-
+      } else {
+        res.send(200);
+      }
         
 
       });
