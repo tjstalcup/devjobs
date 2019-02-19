@@ -67,10 +67,25 @@ module.exports = function(app, passport) {
     }
   })
 
+  app.get('/cleanupskills',(req,res)=>{
+    Skill.find().sort('name')
+      .then(skills=>{
+        skills.forEach(masterSkill=>{
+          skills.forEach(secondarySkill=>{
+            if(masterSkill.name === secondarySkill.name){
+              
+            }
+          })
+        })
+        res.send(skills);
+      })
+      .catch(errorHandler);
+  });
+
   app.get('/dashboard', isLoggedIn, function(req, res) {
     // res.status(200).json({message:'Profile Page',user:req.user});
 
-    Job.find()
+    Job.find({location:/DC/})
       .then((jobs)=>{
         // each job has skills [{_id,name}]
         // req.user has skills [id,id,id]
@@ -82,7 +97,7 @@ module.exports = function(app, passport) {
             }
           });
           job.matchRate = (userSkills/job.skills.length)*100;
-          console.log(job.matchRate);
+          // console.log(job.matchRate);
         });
 
         jobs = jobs.sort(function(a,b){
@@ -154,7 +169,7 @@ module.exports = function(app, passport) {
 
   // Skill Routes
   app.get('/skills', (req,res)=>{
-    Skill.find()
+    Skill.find().sort('name')
       .then((skills)=>res.send(skills))
       .catch(errorHandler);
   });
@@ -190,7 +205,7 @@ module.exports = function(app, passport) {
 
         let items = result.rss.channel[0].item;
         // let numResults = result.rss.channel[0]['os:totalResults'][0];
-        let numResults = 10;
+        let numResults = 1000;
         let completed = 0;
 
         items.forEach(function(item,index){
@@ -242,7 +257,7 @@ module.exports = function(app, passport) {
                         description: item.description[0],
                         pubDate: item.pubDate[0],
                         updateDate: item['a10:updated'][0],
-                        location: item.location[0]['_']
+                        location: (item.hasOwnProperty('location')) ? item.location[0]['_'] : 'NA'
                       })
                     }
                   })
@@ -258,7 +273,7 @@ module.exports = function(app, passport) {
 
         function checkDone(){
           completed++;
-          if(completed == numResults){
+          if(completed >= numResults){
             res.send(200);
           } else {
             console.log(`Completed ${completed} out of ${numResults}`);

@@ -3,7 +3,7 @@ var mongoose = require('mongoose'); // our layer between the routes and the data
 var findOrCreate = require('mongoose-findorcreate');
 
 var skillSchema = mongoose.Schema({
-    name: String
+    name: {type: String, index: true, unique: true}
 });
 
 skillSchema.plugin(findOrCreate);
