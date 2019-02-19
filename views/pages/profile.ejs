@@ -1,0 +1,20 @@
+<% include ../partials/header %>
+
+<h2>Profile for <%=user.local.email%></h2>
+
+<form action="/profile" method="post">
+
+  <p>
+    <label for="location">
+      <input type="text" name="location" placeholder="City (Example DC, NY, LA, Portland)" value="<%=user.location%>" />
+    </label>
+  </p>
+
+  <p>
+    <input type="submit">
+  </p>
+
+</form>
+
+    
+<% include ../partials/footer %>

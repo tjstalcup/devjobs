@@ -11,7 +11,8 @@ var userSchema = mongoose.Schema({
     },
     linkedinId: String,
     // more coming soon w/ LinkedIn
-    skills: [{type: mongoose.Schema.Types.ObjectId, ref: 'Skill'}]
+    skills: [{type: mongoose.Schema.Types.ObjectId, ref: 'Skill'}],
+    location: String
     
 },{
     usePushEach: true

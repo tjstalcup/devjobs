@@ -1,7 +1,17 @@
 <% include ../partials/header %>
 
-    <h2>DevJobs Dashboard for <%=user.local.email%></h2>
+    <h2>Local Jobs for <%=location%></h2>
     <p>Number of jobs <%= jobs.length %></p>
+    <form action="/location-dashboard" method="post">
+      <label for="location">Change to Location:</label>
+      <select name="location" id="location" class="browser-default">
+        <option value="">Choose Location...</option>
+        <% locations.forEach(function(location){ %>
+          <option value="<%=location%>"><%=location%></option>
+        <% }) %>
+      </select>
+      <input type="submit"/>
+    </form>
     <% jobs.forEach(function(job){ %>
       <div class="row">
         <div class="col s12 m6">

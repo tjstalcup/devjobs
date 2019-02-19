@@ -33,10 +33,14 @@ module.exports = function(app, passport) {
 
   app.get('/myskills', isLoggedIn, function(req, res) {
     // res.status(200).json({message:'Signup Page'});
-    let skills;
-    Skill.find()
+    let skills = [];
+    Skill.find().sort('name')
       .then((skillsArray)=>{
-        skills = skillsArray;
+        skillsArray.forEach(skill=>{
+          if(req.user.skills.indexOf(skill._id)<0){
+            skills.push(skill);
+          }
+        });
         return User.findOne({_id:req.user._id}).populate('skills');
       })
       .then((userWithSkills)=>{
@@ -67,6 +71,24 @@ module.exports = function(app, passport) {
     }
   })
 
+  app.get('/add-skill-from-job/:skillid/:userid/:jobid', isLoggedIn, function(req,res){
+    if(req.user._id == req.params.userid){
+      User.findOne({_id:req.params.userid})
+        .then((user)=>{
+          if(user.skills.indexOf(req.params.skillid)<0){ // 0 if first, 1, 2,3, w/e index is. -1 for not found
+            user.skills.push(req.params.skillid)
+          }
+          return user.save();
+        })
+        .then((updatedUser)=>{
+          res.redirect(`/job/${req.params.jobid}`);
+        })
+        .catch(errorHandler);
+    } else {
+      res.redirect('/');
+    }
+  })
+
   app.get('/cleanupskills',(req,res)=>{
     Skill.find().sort('name')
       .then(skills=>{
@@ -82,10 +104,10 @@ module.exports = function(app, passport) {
       .catch(errorHandler);
   });
 
-  app.get('/dashboard', isLoggedIn, function(req, res) {
-    // res.status(200).json({message:'Profile Page',user:req.user});
-
-    Job.find({location:/DC/})
+  app.post('/location-dashboard', isLoggedIn, (req,res)=>{
+    let location = (req.body.location != "") ? req.body.location : "DC";
+    let localjobs;
+    Job.find({location:{ "$regex": location, "$options": "i" }})
       .then((jobs)=>{
         // each job has skills [{_id,name}]
         // req.user has skills [id,id,id]
@@ -104,9 +126,70 @@ module.exports = function(app, passport) {
           return b.matchRate - a.matchRate;
         });
 
+        localjobs = jobs;
+
+        // return Job.find()
+        // grab all jobs
+        // loop over all jobs
+        // check if the location of that job is in our cities array
+        // if not push it in
+        // sort cities alphabetically
+
+        return Job.find().distinct('location');
+      })
+      .then(locations=>{
+        locations = locations.sort();
         res.render('pages/dashboard',{
           user: req.user,
-          jobs: jobs
+          jobs: localjobs,
+          locations: locations,
+          location: location
+        });
+      })
+      .catch(errorHandler);
+  });
+
+  app.get('/dashboard', isLoggedIn, function(req, res) {
+    // res.status(200).json({message:'Profile Page',user:req.user});
+    let location = (req.user.location != "") ? req.user.location : "DC";
+    let localjobs;
+    Job.find({location:{ "$regex": location, "$options": "i" }})
+      .then((jobs)=>{
+        // each job has skills [{_id,name}]
+        // req.user has skills [id,id,id]
+        jobs.forEach(job=>{
+          let userSkills = 0;
+          job.skills.forEach(skill=>{
+            if(req.user.skills.indexOf(skill._id)>=0){
+              userSkills++;
+            }
+          });
+          job.matchRate = (userSkills/job.skills.length)*100;
+          // console.log(job.matchRate);
+        });
+
+        jobs = jobs.sort(function(a,b){
+          return b.matchRate - a.matchRate;
+        });
+
+        localjobs = jobs;
+
+        // return Job.find()
+        // grab all jobs
+        // loop over all jobs
+        // check if the location of that job is in our cities array
+        // if not push it in
+        // sort cities alphabetically
+
+        return Job.find().distinct('location');
+      })
+      .then(locations=>{
+        locations = locations.sort();
+        res.render('pages/dashboard',{
+          user: req.user,
+          jobs: localjobs,
+          locations: locations,
+          location: location
         });
       })
       .catch(errorHandler);
@@ -186,6 +269,28 @@ module.exports = function(app, passport) {
       })
       .then((newUser)=>{
         res.send(newUser);
+      })
+      .catch(errorHandler);
+  });
+
+  app.get('/profile',isLoggedIn,(req,res)=>{
+    User.findOne({_id:req.user._id})
+      .then(user=>{
+        res.render('pages/profile',{
+          user: user
+        });
+      })
+      .catch(errorHandler);
+  });
+
+  app.post('/profile', isLoggedIn, (req,res)=>{
+    User.findOne({_id:req.user._id})
+      .then(user=>{
+        user.location = req.body.location;
+        return user.save();
+      })
+      .then(user=>{
+        res.redirect('/dashboard');
       })
       .catch(errorHandler);
   });

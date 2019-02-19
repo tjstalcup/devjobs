@@ -10,7 +10,7 @@
         <% if(user.skills.indexOf(skill._id)>=0) { %>
           <li class="hasSkill"><%=skill.name%></li>
         <% } else { %>
-          <li><%=skill.name%> - <a href="https://www.youtube.com/results?search_query=<%=skill.name%>+developer+in+5+minutes" class="" target="_blank">Learn Now</a></li>
+          <li><%=skill.name%> - <a href="/add-skill-from-job/<%=skill._id%>/<%=user._id%>/<%=job._id%>">+ Add Skill</a> - <a href="https://www.youtube.com/results?search_query=<%=skill.name%>+developer+in+5+minutes" class="" target="_blank">Learn Now</a></li>
         <% } %> 
       <% }) %>
     </ul>
